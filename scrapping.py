@@ -6,6 +6,10 @@ import pickle
 from multiprocessing import Pool, cpu_count
 import pandas as pd
 
+
+# pip install dateparser
+import dateparser 
+
 user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML,like Gecko) Chrome/35.0.1916.47 Safari/537.36'
 url_avatar_spec = "https://www.allocine.fr/film/fichefilm-61282/critiques/spectateurs/"
 
@@ -32,9 +36,9 @@ def n_stop(bsObj):
     
 #***********************************************************************************************************************
 # function : collecte_articles
-# param : url a string with url from a category of the canadian encyclopedia
-# do : create a liste of url of the categorie page 
-# return : liste of strings 
+# param : url a string with url from allocine
+# do : create a liste of avis 
+# return : liste of strings ans datetime
 #***********************************************************************************************************************
                 
 def collecte_avis(url):
@@ -66,8 +70,11 @@ def collecte_avis(url):
         #avis = l_avis[1]
         for avis in l_avis :
             liste_note.append(avis.find("div",{"class": "review-card-meta"}).find("div",{"class": "stareval"}).find("span",{"class": "stareval-note"}).text)
-            date = avis.find("div",{"class": "review-card-meta"}).find("span",{"class": "review-card-meta-date"}).text            
-            liste_date.append(date.replace("\n", "", 2))           
+            date = avis.find("div",{"class": "review-card-meta"}).find("span",{"class": "review-card-meta-date"}).text   
+            date = date.replace("\n", "", 2)
+            date = date.replace("Publiée le ", "", 1)
+            date = dateparser.parse(date).date()
+            liste_date.append(date)           
             avis_text = avis.find("div",{"class": "review-card-content"}).text        
             liste_avis.append( avis_text.replace("\n", "", 2))                               
             liste_personne.append(avis.find("div",{"class": "review-card-aside"}).find("div",{"class": "review-card-user-infos"}).find("div",{"class": "meta"}).find("div",{"class": "meta-title"}).find("span").text)
@@ -83,3 +90,4 @@ def collecte_avis(url):
 avis = collecte_avis(url_avatar_spec)
 
 avis.to_csv(r'C:\Users\remye\Desktop\M2\Text mining\avis.csv', index = False, header=True)
+
